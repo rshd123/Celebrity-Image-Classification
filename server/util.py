@@ -72,15 +72,25 @@ def get_cropped_image_if_2_eyes(image_path, image_base64_data):
         img = get_cv2_image_from_base64_string(image_base64_data)
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+    faces = face_cascade.detectMultiScale(gray, 1.1, 4)  # More sensitive parameters
 
     cropped_faces = []
+    print(f"Detected {len(faces)} faces")
+    
     for (x,y,w,h) in faces:
             roi_gray = gray[y:y+h, x:x+w]
             roi_color = img[y:y+h, x:x+w]
             eyes = eye_cascade.detectMultiScale(roi_gray)
-            if len(eyes) >= 2:
+            print(f"Detected {len(eyes)} eyes in this face")
+            
+            # Changed from >= 2 to >= 1 to be more flexible
+            if len(eyes) >= 1:
                 cropped_faces.append(roi_color)
+            # If no eyes detected, still include the face (fallback)
+            elif len(faces) == 1:  # If only one face and no eyes, include it anyway
+                print("No eyes detected but including face anyway")
+                cropped_faces.append(roi_color)
+    
     return cropped_faces
 
 def get_b64_test_image_for_virat():
